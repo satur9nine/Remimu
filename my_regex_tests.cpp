@@ -14,7 +14,7 @@
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
-#define BE_QUIET
+//#define BE_QUIET
 
 void testify(void)
 {
@@ -22,6 +22,7 @@ void testify(void)
     
     static const char * regexes[] = {
         "(b|a|as|q|)*?X",
+        u8"((電|自転)車)+",
         "",
         "(|b|a|as|q)*X",
         "(b|a|as|q|)*X",
@@ -190,6 +191,10 @@ void testify(void)
     };
     static const char * texts[] = {
         "asqbX",
+        u8"自転車",
+        u8"電車",
+        u8"電車自転車",
+        u8"自転車電車",
         
         "aaaaaaaaaa",
         "asqb",
