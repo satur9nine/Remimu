@@ -44,7 +44,7 @@ FEATURES
 
     - Lowest-common-denominator common regex syntax
     - Based on backtracking (slow in the worst case, but fast in the best case)
-    - 8-bit only, not unicode
+    - 8-bit only, no utf-16 or utf-32
     - Statically known memory usage (no heap allocation or recursion)
     - Groups with or without capture, and with or without quantifiers
     - Supported escapes:
@@ -72,7 +72,7 @@ FEATURES
 NOT SUPPORTED
 
     - Strings with non-terminal null characters
-    - Unicode, unicode character classes, etc
+    - Unicode character classes (matching single utf-8 characters works regardless)
     - Exact POSIX regex semantics (posix-style greediness etc)
     - Backreferences
     - Lookbehind/Lookahead
