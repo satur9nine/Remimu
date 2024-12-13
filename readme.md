@@ -72,6 +72,7 @@ Remimu uses length-checked fixed memory buffers with no recursion, so memory usa
 - Strings with non-terminal null characters
 - Unicode character classes (matching single utf-8 characters works regardless)
 - Exact POSIX regex semantics (posix-style greediness etc)
+- - (note: despite being a posix thing, it would be very weird and rare to support exact posix semantics. most regex implementations are not posix regexes and posix regexes are surprising.)
 - Backreferences
 - Lookbehind/Lookahead
 - Named groups
