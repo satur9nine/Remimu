@@ -5,7 +5,7 @@ Compatible with C99 and C++11 and later standards. Uses backtracking and relativ
     #include "remimu.h"
 
 ## Functions
-
+```c
     // Returns 0 on success, or -1 on invalid or unsupported regex, or -2 on not enough tokens given to parse regex.
     static inline int regex_parse(
         const char * pattern,       // Regex pattern to parse.
@@ -27,7 +27,7 @@ Compatible with C99 and C++11 and later standards. Uses backtracking and relativ
     static inline void print_regex_tokens(
         RegexToken * tokens     // Regex tokens to spew to stdout, for debugging.
     )
-
+```
 Remimu doesn't have a searching API.
 
 ## Performance
@@ -80,7 +80,7 @@ Remimu uses length-checked fixed memory buffers with no recursion, so memory usa
 - Capture of or inside of possessive-quantified groups (still take up a capture slot, but no data is returned)
 
 ## Usage
-
+```c
     // minimal:
     
     RegexToken tokens[1024];
@@ -110,7 +110,7 @@ Remimu uses length-checked fixed memory buffers with no recursion, so memory usa
         
     // for debugging
     print_regex_tokens(tokens);
-
+```
 ## Testing
 
 `my_regex_tests.cpp` is a C++11 program that throws a matrix of regexes and test strings into PCRE2 and validates that they're matched the same way in Remimu (for supported features). It contains a good number of gotcha regexes.
