@@ -42,7 +42,7 @@ Remimu uses length-checked fixed memory buffers with no recursion, so memory usa
 
 - Lowest-common-denominator common regex syntax
 - Based on backtracking (slow in the worst case, but fast in the best case)
-- 8-bit only, no utf-16 or utf-32
+- 8-bit only, no utf-16 or utf-32. Use https://wareya.github.io/uniregex/ to create 8-bit versions of utf-8 regexes
 - Statically known memory usage (no heap allocation or recursion)
 - Groups with or without capture, and with or without quantifiers
 - Supported escapes:
