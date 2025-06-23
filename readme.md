@@ -2,10 +2,10 @@
 
 Compatible with C99 and C++11 and later standards. Uses backtracking and relatively standard regex syntax.
 
-    #include "my_regex.h"
+    #include "remimu.h"
 
 ## Functions
-
+```c
     // Returns 0 on success, or -1 on invalid or unsupported regex, or -2 on not enough tokens given to parse regex.
     static inline int regex_parse(
         const char * pattern,       // Regex pattern to parse.
@@ -27,7 +27,7 @@ Compatible with C99 and C++11 and later standards. Uses backtracking and relativ
     static inline void print_regex_tokens(
         RegexToken * tokens     // Regex tokens to spew to stdout, for debugging.
     )
-
+```
 Remimu doesn't have a searching API.
 
 ## Performance
@@ -42,7 +42,7 @@ Remimu uses length-checked fixed memory buffers with no recursion, so memory usa
 
 - Lowest-common-denominator common regex syntax
 - Based on backtracking (slow in the worst case, but fast in the best case)
-- 8-bit only, no utf-16 or utf-32
+- 8-bit only, no utf-16 or utf-32. Use https://wareya.github.io/uniregex/ to create 8-bit versions of utf-8 regexes
 - Statically known memory usage (no heap allocation or recursion)
 - Groups with or without capture, and with or without quantifiers
 - Supported escapes:
@@ -72,6 +72,7 @@ Remimu uses length-checked fixed memory buffers with no recursion, so memory usa
 - Strings with non-terminal null characters
 - Unicode character classes (matching single utf-8 characters works regardless)
 - Exact POSIX regex semantics (posix-style greediness etc)
+- - (note: despite being a posix thing, it would be very weird and rare to support exact posix semantics. most regex implementations are not posix regexes and posix regexes are surprising.)
 - Backreferences
 - Lookbehind/Lookahead
 - Named groups
@@ -79,7 +80,7 @@ Remimu uses length-checked fixed memory buffers with no recursion, so memory usa
 - Capture of or inside of possessive-quantified groups (still take up a capture slot, but no data is returned)
 
 ## Usage
-
+```c
     // minimal:
     
     RegexToken tokens[1024];
@@ -109,7 +110,7 @@ Remimu uses length-checked fixed memory buffers with no recursion, so memory usa
         
     // for debugging
     print_regex_tokens(tokens);
-
+```
 ## Testing
 
 `my_regex_tests.cpp` is a C++11 program that throws a matrix of regexes and test strings into PCRE2 and validates that they're matched the same way in Remimu (for supported features). It contains a good number of gotcha regexes.
