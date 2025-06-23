@@ -1,5 +1,13 @@
 #ifndef INCLUDE_REMIMU
 
+#ifndef REMIMU_FUNC_VISIBILITY
+#define REMIMU_FUNC_VISIBILITY static inline
+#endif
+
+#ifndef REMIMU_CONST_VISIBILITY
+#define REMIMU_CONST_VISIBILITY static const
+#endif
+
 /************
  
     REMIMU: SINGLE HEADER C/C++ REGEX LIBRARY
@@ -11,7 +19,7 @@
 FUNCTIONS
 
     // Returns 0 on success, or -1 on invalid or unsupported regex, or -2 on not enough tokens given to parse regex.
-    static inline int regex_parse(
+    int regex_parse(
         const char * pattern,       // Regex pattern to parse.
         RegexToken * tokens,        // Output buffer of token_count regex tokens.
         int16_t * token_count,      // Maximum allowed number of tokens to write
@@ -19,7 +27,7 @@ FUNCTIONS
     )
     
     // Returns match length, or -1 on no match, or -2 on out of memory, or -3 if the regex is invalid.
-    static inline int64_t regex_match(
+    int64_t regex_match(
         const RegexToken * tokens,  // Parsed regex to match against text.
         const char * text,          // Text to match against tokens.
         size_t start_i,             // index value to match at.
@@ -28,7 +36,7 @@ FUNCTIONS
         int64_t * cap_span          // Capture length info output buffer.
     ) 
     
-    static inline void print_regex_tokens(
+    void print_regex_tokens(
         RegexToken * tokens     // Regex tokens to spew to stdout, for debugging.
     )
 
@@ -124,22 +132,22 @@ LICENSE
 #include <string.h>
 #include <assert.h>
 
-static const int REMIMU_FLAG_DOT_NO_NEWLINES = 1;
+REMIMU_CONST_VISIBILITY int REMIMU_FLAG_DOT_NO_NEWLINES = 1;
 
-static const uint8_t REMIMU_KIND_NORMAL      = 0;
-static const uint8_t REMIMU_KIND_OPEN        = 1;
-static const uint8_t REMIMU_KIND_NCOPEN      = 2;
-static const uint8_t REMIMU_KIND_CLOSE       = 3;
-static const uint8_t REMIMU_KIND_OR          = 4;
-static const uint8_t REMIMU_KIND_CARET       = 5;
-static const uint8_t REMIMU_KIND_DOLLAR      = 6;
-static const uint8_t REMIMU_KIND_BOUND       = 7;
-static const uint8_t REMIMU_KIND_NBOUND      = 8;
-static const uint8_t REMIMU_KIND_END         = 9;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_NORMAL      = 0;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_OPEN        = 1;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_NCOPEN      = 2;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_CLOSE       = 3;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_OR          = 4;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_CARET       = 5;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_DOLLAR      = 6;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_BOUND       = 7;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_NBOUND      = 8;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_KIND_END         = 9;
 
-static const uint8_t REMIMU_MODE_POSSESSIVE  = 1;
-static const uint8_t REMIMU_MODE_LAZY        = 2;
-static const uint8_t REMIMU_MODE_INVERTED    = 128; // temporary; gets cleared later
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_MODE_POSSESSIVE  = 1;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_MODE_LAZY        = 2;
+REMIMU_CONST_VISIBILITY uint8_t REMIMU_MODE_INVERTED    = 128; // temporary; gets cleared later
 
 typedef struct _RegexToken {
     uint8_t kind;
@@ -160,7 +168,7 @@ typedef struct _RegexToken {
 /// Flags: Not yet used.
 /// SAFETY: Pattern must be null-terminated.
 /// SAFETY: tokens buffer must have at least the input token_count number of RegexToken objects. They are allowed to be uninitialized.
-static inline int regex_parse(const char * pattern, RegexToken * tokens, int16_t * token_count, int32_t flags)
+REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens, int16_t * token_count, int32_t flags)
 {
     int64_t tokens_len = *token_count;
     uint64_t pattern_len = strlen(pattern);
@@ -822,7 +830,7 @@ typedef struct _RegexMatcherState {
 // SAFETY: The text variable must be null-terminated, and start_i must be the index of a character within the string or its null terminator.
 // SAFETY: Tokens array must be terminated by a REMIMU_KIND_END token (done by default by regex_parse).
 // SAFETY: Partial capture data may be written even if the match fails.
-static inline int64_t regex_match(const RegexToken * tokens, const char * text, size_t start_i, uint16_t cap_slots, int64_t * cap_pos, int64_t * cap_span)
+REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char * text, size_t start_i, uint16_t cap_slots, int64_t * cap_pos, int64_t * cap_span)
 {
     (void)text;
     
@@ -1389,7 +1397,7 @@ static inline int64_t regex_match(const RegexToken * tokens, const char * text, 
     return i;
 }
 
-static inline void print_regex_tokens(RegexToken * tokens)
+REMIMU_FUNC_VISIBILITY void print_regex_tokens(RegexToken * tokens)
 {
     const char * kind_to_str[] = {
         "NORMAL",
