@@ -30,6 +30,8 @@ Compatible with C99 and C++11 and later standards. Uses backtracking and relativ
 ```
 Remimu doesn't have a searching API.
 
+If `static inline` doesn't work for your project, define the `REMIMU_FUNC_VISIBILITY` (default `static inline`) and `REMIMU_CONST_VISIBILITY` (default `static const`) visibility prefix macros before including the header. Remimu doesn't use mutable global or mutable static variables, so no prefix macro is needed for them.
+
 ## Performance
 
 On simple cases, Remimu's match speed is similar to PCRE2. Regex parsing/compilation is also much faster (around 4x to 10x), so single-shot regexes are often faster than PCRE2.
