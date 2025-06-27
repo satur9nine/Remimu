@@ -8,6 +8,10 @@
 #define REMIMU_CONST_VISIBILITY static const
 #endif
 
+#ifndef REMIMU_LOG_ERROR
+#define REMIMU_LOG_ERROR puts
+#endif
+
 /************
  
     REMIMU: SINGLE HEADER C/C++ REGEX LIBRARY
@@ -215,7 +219,7 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
             if (token.mode & REMIMU_MODE_INVERTED) _REGEX_DO_INVERT() \
             if (k >= tokens_len) \
             { \
-                puts("buffer overflow"); \
+                REMIMU_LOG_ERROR("buffer overflow"); \
                 return -2; \
             } \
             tokens[k++] = token; \
@@ -275,7 +279,7 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
                         val += (uint32_t)(pattern[i] - '0');
                         if (val > 0xFFFF)
                         {
-                            puts("quantifier range too long");
+                            REMIMU_LOG_ERROR("quantifier range too long");
                             return -1; // unsupported length
                         }
                         i += 1;
@@ -296,14 +300,14 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
                                 val2 += (uint32_t)(pattern[i] - '0');
                                 if (val2 > 0xFFFF)
                                 {
-                                    puts("quantifier range too long");
+                                    REMIMU_LOG_ERROR("quantifier range too long");
                                     return -1; // unsupported length
                                 }
                                 i += 1;
                             }
                             if (val2 < val)
                             {
-                                puts("quantifier range is backwards");
+                                REMIMU_LOG_ERROR("quantifier range is backwards");
                                 return -1; // unsupported length
                             }
                             token.count_hi = val2 + 1;
@@ -317,7 +321,7 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
                     }
                     else
                     {
-                        puts("quantifier range syntax broken (no terminator)");
+                        REMIMU_LOG_ERROR("quantifier range syntax broken (no terminator)");
                         return -1;
                     }
                 }
@@ -425,7 +429,7 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
                 }
                 else
                 {
-                    puts("unsupported escape sequence");
+                    REMIMU_LOG_ERROR("unsupported escape sequence");
                     return -1; // unknown/unsupported escape sequence
                 }
             }
@@ -517,7 +521,7 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
                 }
                 else if (c == '?' || c == '+' || c == '*' || c == '{')
                 {
-                    puts("quantifier in non-quantifier context");
+                    REMIMU_LOG_ERROR("quantifier in non-quantifier context");
                     return -1; // quantifier in non-quantifier context
                 }
                 else if (c == '.')
@@ -606,7 +610,7 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
                 {
                     if (state == STATE_CC_RANGE)
                     {
-                        puts("tried to use a shorthand as part of a range");
+                        REMIMU_LOG_ERROR("tried to use a shorthand as part of a range");
                         return -1; // range shorthands can't be part of a range
                     }
                     uint8_t is_upper = c <= 'Z';
@@ -682,12 +686,12 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
                 {
                     if (char_class_mem == -1)
                     {
-                        puts("character class range is broken");
+                        REMIMU_LOG_ERROR("character class range is broken");
                         return -1; // probably tried to use a character class shorthand as part of a range
                     }
                     if ((uint8_t)c < char_class_mem)
                     {
-                        puts("character class range is misordered");
+                        REMIMU_LOG_ERROR("character class range is misordered");
                         return -1; // range is in wrong order
                     }
                     //printf("enabling char class from %d to %d...\n", char_class_mem, c);
@@ -703,17 +707,17 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
     }
     if (paren_count > 0)
     {
-        puts("(paren_count > 0)");
+        REMIMU_LOG_ERROR("(paren_count > 0)");
         return -1; // unbalanced parens
     }
     if (esc_state != 0)
     {
-        puts("(esc_state != 0)");
+        REMIMU_LOG_ERROR("(esc_state != 0)");
         return -1; // open escape sequence
     }
     if (state >= STATE_CC_INIT)
     {
-        puts("(state >= STATE_CC_INIT)");
+        REMIMU_LOG_ERROR("(state >= STATE_CC_INIT)");
         return -1; // open character class
     }
     
@@ -780,13 +784,13 @@ REMIMU_FUNC_VISIBILITY int regex_parse(const char * pattern, RegexToken * tokens
             }
             if (found == -1)
             {
-                puts("unbalanced parens...");
+                REMIMU_LOG_ERROR("unbalanced parens...");
                 return -1; // unbalanced parens
             }
             ptrdiff_t diff = found - k2;
             if (diff > 32767)
             {
-                puts("too long...");
+                REMIMU_LOG_ERROR("too long...");
                 return -1; // too long
             }
             
@@ -878,7 +882,7 @@ REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char
         {
             if (tokens[k].mask[0] >= aux_stats_size)
             {
-                puts("too many qualified groups. returning");
+                REMIMU_LOG_ERROR("too many qualified groups. returning");
                 return -2; // OOM: too many quantified groups
             }
             
@@ -910,7 +914,7 @@ REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char
     #define _REWIND_DO_SAVE_RAW(K, ISDUMMY) { \
         if (stack_n >= stack_size_max) \
         { \
-            puts("out of backtracking room. returning"); \
+            REMIMU_LOG_ERROR("out of backtracking room. returning"); \
             return -2; \
         } \
         RegexMatcherState s; \
@@ -972,7 +976,7 @@ REMIMU_FUNC_VISIBILITY int64_t regex_match(const RegexToken * tokens, const char
         //limit--;
         if (limit == 0)
         {
-            puts("iteration limit exceeded. returning");
+            REMIMU_LOG_ERROR("iteration limit exceeded. returning");
             return -2;
         }
         IF_VERBOSE(printf("k: %u\ti: %zu\tl: %zu\tstack_n: %d\n", k, i, limit, stack_n);)
