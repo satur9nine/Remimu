@@ -10,11 +10,60 @@
 #include <chrono>
 
 #include <string>
+#include <string_view>
+#include <vector>
 
 #define PCRE2_CODE_UNIT_WIDTH 8
 #include <pcre2.h>
 
 #define BE_QUIET
+
+static void must_parse_ok(const char* pat) {
+    RegexToken toks[128];
+    memset(toks, 0, sizeof(toks));
+    int16_t cap = (int16_t)(sizeof(toks)/sizeof(toks[0]));
+    int rc = regex_parse(pat, toks, &cap, 0);
+    if (rc != 0) {
+        fprintf(stderr, "[FAIL] regex_parse should succeed: `%s` (rc=%d)\n", pat, rc);
+        assert(rc == 0);
+    }
+}
+
+static void must_parse_fail(const char* pat) {
+    RegexToken toks[16];
+    memset(toks, 0, sizeof(toks));
+    int16_t cap = (int16_t)(sizeof(toks)/sizeof(toks[0]));
+    int rc = regex_parse(pat, toks, &cap, 0);
+    if (rc == 0) {
+        fprintf(stderr, "[FAIL] regex_parse should fail: `%s`\n", pat);
+        assert(rc != 0);
+    }
+}
+
+static int64_t do_match(const char* pat, const char* text) {
+    RegexToken toks[256];
+    memset(toks, 0, sizeof(toks));
+    int16_t cap = (int16_t)(sizeof(toks)/sizeof(toks[0]));
+    int rc = regex_parse(pat, toks, &cap, 0);
+    assert(rc == 0);
+    return regex_match(toks, text, 0, 0, 0, 0);
+}
+
+static void expect_match_len(const char* pat, const char* text, int64_t want_len) {
+    int64_t got = do_match(pat, text);
+    if (got != want_len) {
+        fprintf(stderr, "[FAIL] `%s` ~ `%s` : want %zd, got %zd\n", pat, text, (ssize_t)want_len, (ssize_t)got);
+        assert(got == want_len);
+    }
+}
+
+static void expect_no_match(const char* pat, const char* text) {
+    int64_t got = do_match(pat, text);
+    if (got >= 0) {
+        fprintf(stderr, "[FAIL] `%s` should NOT match `%s` (got len=%zd)\n", pat, text, (ssize_t)got);
+        assert(got < 0);
+    }
+}
 
 void testify(void)
 {
@@ -520,6 +569,49 @@ void testify(void)
     for (int i = 0; i < 5; i++)
         printf("Capture %d: %zd plus %zd\n", i, cap_pos[i], cap_span[i]);
     
+    // Correct \xHH parsing (nibble order)
+    // Should parse and match 'A' (0x41). Also should *not* match 'B'.
+    must_parse_ok("\\x41");
+    expect_match_len("\\x41", "A", 1);
+    expect_no_match("\\x41", "B");
+
+    // Sanity check: lower-case hex -> 'z' (0x7A)
+    must_parse_ok("\\x7a");
+    expect_match_len("\\x7a", "z", 1);
+    expect_no_match("\\x7a", "Z");
+
+    // \xHH inside bracket/class
+    must_parse_ok("[\\x41]");
+    expect_match_len("[\\x41]", "A", 1);
+    expect_no_match("[\\x41]", "C");
+
+    // Multiple items in class with hex
+    must_parse_ok("[ABC\\x7a]");
+    expect_match_len("[ABC\\x7a]", "z", 1);
+    expect_match_len("[ABC\\x7a]", "A", 1);
+    expect_no_match("[ABC\\x7a]", "q");
+
+    // Too-short hex escapes must fail parse WITHOUT reading past end
+    must_parse_fail("\\x");     // nothing after 'x'
+    must_parse_fail("\\x4");    // only one hex nibble
+    must_parse_fail("[\\x]");   // same in a class
+    must_parse_fail("[\\x4]");  // single nibble in a class
+
+    // Valid hex at end-of-pattern should still be OK
+    must_parse_ok("foo\\x41");
+    expect_match_len("foo\\x41", "fooA", 4);
+    expect_no_match("foo\\x41", "foo@");
+
+    // Normal text around hex to ensure state transitions are correct
+    must_parse_ok("X\\x41Y");
+    expect_match_len("X\\x41Y", "XA Y", -1);  // space breaks it
+    expect_match_len("X\\x41Y", "XAY", 3);
+
+    // Bracket class mixing ranges and hex
+    must_parse_ok("[A-\\x5A]");  // 'A'-'Z'
+    expect_match_len("[A-\\x5A]", "M", 1);
+    expect_no_match("[A-\\x5A]", "m");
+        
     print_regex_tokens(tokens);
     
     puts("All regex tests passed!");

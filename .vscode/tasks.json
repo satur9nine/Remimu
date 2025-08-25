@@ -1,0 +1,29 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": {
+                "base": "$gcc",
+            },
+            "type": "shell",
+            "command": "make",
+        },
+        {
+            "label": "Run",
+            "type": "shell",
+            "command": "${workspaceRoot}/build/Remimu/Remimu",
+        },
+        {
+            "label": "Build clean",
+            "group": "build",
+            "type": "shell",
+            "command": "make",
+            "args": ["clean"],
+        }
+    ]
+}
